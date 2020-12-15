@@ -76,7 +76,7 @@ class SubletSorter:
             "jaesung.tae@facebook.com"
         )
         self.browser.find_element_by_xpath("//input[@type='password']").send_keys(
-            "Jakelake100493"
+            os.getenv("FACEBOOK_PASSWORD")
         )
         self.browser.find_element_by_xpath("//input[@name='login']").click()
 
