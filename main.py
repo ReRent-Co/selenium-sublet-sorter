@@ -4,6 +4,7 @@ from sys import platform
 
 import pandas as pd
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
 
@@ -21,10 +22,7 @@ def create_browser():
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
-        browser = webdriver.Chrome(
-            executable_path=driver_path,
-            options=options,
-        )
+        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
     except Exception as e:
         browser = webdriver.Chrome(options=options)
     return browser
@@ -89,20 +87,38 @@ class SubletSorter:
         elif self.school == "brown":
             self.browser.get("https://mbasic.facebook.com/groups/683411031786289/")
 
+    def remove(self, element):
+        self.browser.execute_script(
+            "var element = arguments[0];element.parentNode.removeChild(element);",
+            element,
+        )
+
     def scrape_posts(self):
         count = 0
         result = []
+        link = None
         while count < self.num_posts:
-            print(len(result))
-            posts = self.browser.find_elements_by_tag_name("article")
-            print(posts)
-            for post in posts:
-                print("here!")
-                result.append(parse_post(post))
+            if link is None:
+                link = (
+                    self.browser.find_element_by_id("m_group_stories_container")
+                    .find_element_by_xpath("./div/a")
+                    .get_attribute("href")
+                )
+                print(link)
+            try:
+                post = self.browser.find_element_by_tag_name("article")
+            except NoSuchElementException:
+                self.browser.get(link)
+                link = None
+                continue
+            try:
+                parsed = parse_post(post)
+                print(parsed["title"])
+                result.append(parsed)
                 count += 1
-            # self.browser.find_element_by_id(
-            #     "m_group_stories_container"
-            # ).find_element_by_xpath("//div/span").click()
+            except:
+                pass
+            self.remove(post)
         df = pd.DataFrame(result)
         df.to_csv("result.csv")
 
@@ -121,10 +137,7 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts",
-        type=int,
-        default=30,
-        help="how many posts to scrape",
+        "--num_posts", type=int, default=30, help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)
