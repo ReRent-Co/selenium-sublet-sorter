@@ -73,7 +73,7 @@ class SubletSorter:
     def login(self):
         self.browser.get("https://mbasic.facebook.com")
         self.browser.find_element_by_id("m_login_email").send_keys(
-            "jaesung.tae@facebook.com"
+            os.getenv("FACEBOOK_USERNAME")
         )
         self.browser.find_element_by_xpath("//input[@type='password']").send_keys(
             os.getenv("FACEBOOK_PASSWORD")
