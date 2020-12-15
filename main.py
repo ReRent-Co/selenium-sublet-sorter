@@ -21,7 +21,10 @@ def create_browser():
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
-        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
+        browser = webdriver.Chrome(
+            executable_path=driver_path,
+            options=options,
+        )
     except Exception as e:
         browser = webdriver.Chrome(options=options)
     return browser
@@ -91,13 +94,15 @@ class SubletSorter:
         result = []
         while count < self.num_posts:
             print(len(result))
-            posts = self.browser.find_elements_by_class_name("do")
+            posts = self.browser.find_elements_by_tag_name("article")
+            print(posts)
             for post in posts:
+                print("here!")
                 result.append(parse_post(post))
                 count += 1
-            self.browser.find_element_by_id(
-                "m_group_stories_container"
-            ).find_element_by_xpath("//div/span").click()
+            # self.browser.find_element_by_id(
+            #     "m_group_stories_container"
+            # ).find_element_by_xpath("//div/span").click()
         df = pd.DataFrame(result)
         df.to_csv("result.csv")
 
@@ -116,7 +121,10 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts", type=int, default=30, help="how many posts to scrape",
+        "--num_posts",
+        type=int,
+        default=30,
+        help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)
