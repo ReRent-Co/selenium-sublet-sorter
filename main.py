@@ -7,6 +7,8 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
+from utils import clean_name_url, clean_post_url, clean_title, parse_date, parse_price
+
 
 def create_browser():
     options = webdriver.ChromeOptions()
@@ -22,10 +24,7 @@ def create_browser():
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
-        browser = webdriver.Chrome(
-            executable_path=driver_path,
-            options=options,
-        )
+        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
     except Exception as e:
         browser = webdriver.Chrome(options=options)
     return browser
@@ -57,12 +56,12 @@ def parse_post(post):
             link = candidate.get_attribute("href")
             break
     return {
-        "profile": profile,
-        "title": title,
-        "price": price,
-        "location": location,
-        "text": text,
-        "link": link,
+        "Profile URL": profile,
+        "Title": title,
+        "Price": price,
+        "Area": location,
+        "Description": text,
+        "Post URL": link,
     }
 
 
@@ -109,7 +108,6 @@ class SubletSorter:
                     .find_element_by_xpath("./div/a")
                     .get_attribute("href")
                 )
-                print(link)
             try:
                 post = self.browser.find_element_by_tag_name("article")
             except NoSuchElementException:
@@ -118,7 +116,6 @@ class SubletSorter:
                 continue
             try:
                 parsed = parse_post(post)
-                print(parsed["title"])
                 result.append(parsed)
                 count += 1
                 print(count)
@@ -126,12 +123,19 @@ class SubletSorter:
                 print(e)
             self.remove(post)
         df = pd.DataFrame(result)
-        df.to_csv("result.csv")
+        df = df[df["Price"].apply(parse_price) > 500]
+        # df["Date"] = df["Date"].apply(parse_date)
+        df["Profile URL"] = df["Profile URL"].apply(clean_name_url)
+        df["Post URL"] = df["Post URL"].apply(clean_post_url)
+        df["Title"] = df["Title"].apply(clean_title)
+        df.to_excel("parsed.xlsx", index=False)
+        # df.to_csv("result.csv")
 
     def main(self):
         self.login()
         self.browse_group()
         self.scrape_posts()
+        self.browser.quit()
 
 
 if __name__ == "__main__":
@@ -143,10 +147,7 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts",
-        type=int,
-        default=30,
-        help="how many posts to scrape",
+        "--num_posts", type=int, default=30, help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)
