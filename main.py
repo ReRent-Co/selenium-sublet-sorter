@@ -48,6 +48,7 @@ def parse_post(post):
         "p"
     )
     text = " ".join(p.text for p in p_tags)
+    name = post.find_element_by_xpath("//header/h3/span/strong/a").text
     bottom_links = post.find_elements_by_xpath("//div[@class='cp cq']")[
         -1
     ].find_elements_by_tag_name("a")
@@ -57,12 +58,13 @@ def parse_post(post):
             link = candidate.get_attribute("href")
             break
     return {
+        "Name": name,
         "Profile URL": profile,
         "Title": title,
         "Price": price,
-        "Date": date,
         "Area": location,
         "Description": text,
+        "Date": date,
         "Post URL": link,
     }
 
