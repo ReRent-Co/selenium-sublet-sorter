@@ -22,7 +22,10 @@ def create_browser():
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
-        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
+        browser = webdriver.Chrome(
+            executable_path=driver_path,
+            options=options,
+        )
     except Exception as e:
         browser = webdriver.Chrome(options=options)
     return browser
@@ -39,6 +42,7 @@ def parse_post(post):
         .find_elements_by_tag_name("span")[1]
         .text
     )
+    price = post.find_element_by_xpath("./div/div/div/div[2]/div").text
     location = post.find_element_by_xpath("//span[@class='eo']").text
     p_tags = post.find_element_by_xpath("//div[@class='ep']").find_elements_by_tag_name(
         "p"
@@ -55,6 +59,7 @@ def parse_post(post):
     return {
         "profile": profile,
         "title": title,
+        "price": price,
         "location": location,
         "text": text,
         "link": link,
@@ -116,8 +121,9 @@ class SubletSorter:
                 print(parsed["title"])
                 result.append(parsed)
                 count += 1
-            except:
-                pass
+                print(count)
+            except Exception as e:
+                print(e)
             self.remove(post)
         df = pd.DataFrame(result)
         df.to_csv("result.csv")
@@ -137,7 +143,10 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts", type=int, default=30, help="how many posts to scrape",
+        "--num_posts",
+        type=int,
+        default=30,
+        help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)
