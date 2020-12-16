@@ -42,6 +42,7 @@ def parse_post(post):
         .text
     )
     price = post.find_element_by_xpath("./div/div/div/div[2]/div").text
+    date = post.find_element_by_xpath("./footer/div/abbr").text
     location = post.find_element_by_xpath("//span[@class='eo']").text
     p_tags = post.find_element_by_xpath("//div[@class='ep']").find_elements_by_tag_name(
         "p"
@@ -59,6 +60,7 @@ def parse_post(post):
         "Profile URL": profile,
         "Title": title,
         "Price": price,
+        "Date": date,
         "Area": location,
         "Description": text,
         "Post URL": link,
@@ -118,13 +120,12 @@ class SubletSorter:
                 parsed = parse_post(post)
                 result.append(parsed)
                 count += 1
-                print(count)
             except Exception as e:
                 print(e)
             self.remove(post)
         df = pd.DataFrame(result)
         df = df[df["Price"].apply(parse_price) > 500]
-        # df["Date"] = df["Date"].apply(parse_date)
+        df["Date"] = df["Date"].apply(parse_date)
         df["Profile URL"] = df["Profile URL"].apply(clean_name_url)
         df["Post URL"] = df["Post URL"].apply(clean_post_url)
         df["Title"] = df["Title"].apply(clean_title)

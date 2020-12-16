@@ -27,7 +27,7 @@ def parse_price(price):
 
 def parse_date(date):
     today = datetime.today()
-    if "hrs" in date:
+    if "hrs" in date or "min" in date:
         parsed_date = today
     elif "Yesterday" in date:
         parsed_date = today - timedelta(days=1)
