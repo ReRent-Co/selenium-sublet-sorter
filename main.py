@@ -49,8 +49,8 @@ def parse_post(post):
     )
     text = " ".join(p.text for p in p_tags)
     name = post.find_element_by_xpath("//header/h3/span/strong/a").text
-    bottom_links = post.find_elements_by_xpath("//div[@class='cp cq']")[
-        -1
+    bottom_links = post.find_elements_by_xpath("//footer/div")[
+        1
     ].find_elements_by_tag_name("a")
     link = ""
     for candidate in bottom_links:
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts", type=int, default=30, help="how many posts to scrape",
+        "--num_posts", type=int, default=200, help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)
