@@ -24,30 +24,32 @@ def create_browser():
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
-        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
+        browser = webdriver.Chrome(
+            executable_path=driver_path,
+            options=options,
+        )
     except Exception as e:
         browser = webdriver.Chrome(options=options)
     return browser
 
 
 def parse_post(post):
-    profile = (
-        post.find_element_by_tag_name("h3")
-        .find_element_by_tag_name("a")
-        .get_attribute("href")
-    )
+    h3_tag = post.find_element_by_tag_name("h3")
+    if h3_tag.text == "Suggested Groups":
+        return
+    profile = h3_tag.find_element_by_tag_name("a").get_attribute("href")
     title = (
-        post.find_element_by_xpath("//div[@class='ek']")
+        post.find_element_by_xpath("./div/div/div/div")
         .find_elements_by_tag_name("span")[1]
         .text
     )
     price = post.find_element_by_xpath("./div/div/div/div[2]/div").text
     date = post.find_element_by_xpath("./footer/div/abbr").text
-    location = post.find_element_by_xpath("//span[@class='eo']").text
-    p_tags = post.find_element_by_xpath("//div[@class='ep']").find_elements_by_tag_name(
-        "p"
-    )
-    text = " ".join(p.text for p in p_tags)
+    location = post.find_element_by_xpath("./div/div/div/div[3]").text
+    p_tags = post.find_element_by_xpath(
+        "./div/div/div/div[4]"
+    ).find_elements_by_tag_name("p")
+    text = " ".join(p.text for p in p_tags).replace("\n", " ")
     name = post.find_element_by_xpath("//header/h3/span/strong/a").text
     bottom_links = post.find_elements_by_xpath("//footer/div")[
         1
@@ -112,6 +114,8 @@ class SubletSorter:
                     .find_element_by_xpath("./div/a")
                     .get_attribute("href")
                 )
+                # remove Kopa post
+                self.remove(self.browser.find_element_by_tag_name("article"))
             try:
                 post = self.browser.find_element_by_tag_name("article")
             except NoSuchElementException:
@@ -120,13 +124,16 @@ class SubletSorter:
                 continue
             try:
                 parsed = parse_post(post)
-                result.append(parsed)
-                count += 1
+                if parsed:
+                    result.append(parsed)
+                    count += 1
             except Exception as e:
                 print(e)
             self.remove(post)
         df = pd.DataFrame(result)
-        df = df[df["Price"].apply(parse_price) > 500]
+        df = df[df["Price"].apply(parse_price) > 450]
+        df = df[df["Price"].apply(parse_price) < 15000]
+        df["Price"] = df["Price"].apply(lambda p: f"${parse_price(p)}")
         df["Date"] = df["Date"].apply(parse_date)
         df["Profile URL"] = df["Profile URL"].apply(clean_name_url)
         df["Post URL"] = df["Post URL"].apply(clean_post_url)
@@ -150,7 +157,10 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts", type=int, default=200, help="how many posts to scrape",
+        "--num_posts",
+        type=int,
+        default=200,
+        help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)

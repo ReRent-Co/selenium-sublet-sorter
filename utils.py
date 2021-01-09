@@ -19,6 +19,9 @@ def clean_title(title):
 
 
 def parse_price(price):
+    price = price.lower()
+    if "now" in price:
+        price = price.split("now")[-1]
     str_res = "".join(re.findall(r"\d+", price))
     if str_res:
         return int(str_res)
@@ -33,5 +36,4 @@ def parse_date(date):
         parsed_date = today - timedelta(days=1)
     else:
         return date.split(" at")[0]
-    return parsed_date.strftime("%B %d")
-
+    return parsed_date.strftime("%B %-d")
