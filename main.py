@@ -74,10 +74,16 @@ def parse_post(post):
 class SubletSorter:
     def __init__(self, args):
         self.school = args.school.lower()
+
+        self.school_group_id = {
+            "yale": "1483912085183985",
+            "brown": "683411031786289",
+        }
         assert self.school in {
             "yale",
             "brown",
-        }, "`school` must be one of 'yale' or 'brown'"
+            "all",
+        }, "`school` must be one of 'yale' or 'brown', or 'all'"
         self.num_posts = args.num_posts
         self.browser = create_browser()
 
@@ -92,10 +98,8 @@ class SubletSorter:
         self.browser.find_element_by_xpath("//input[@name='login']").click()
 
     def browse_group(self):
-        if self.school == "yale":
-            self.browser.get("https://mbasic.facebook.com/groups/1483912085183985/")
-        elif self.school == "brown":
-            self.browser.get("https://mbasic.facebook.com/groups/683411031786289/")
+        base_link = "https://mbasic.facebook.com/groups/"
+        self.browser.get(f"{base_link}{self.school_group_id[self.school]}/")
 
     def remove(self, element):
         self.browser.execute_script(
@@ -138,13 +142,17 @@ class SubletSorter:
         df["Profile URL"] = df["Profile URL"].apply(clean_name_url)
         df["Post URL"] = df["Post URL"].apply(clean_post_url)
         df["Title"] = df["Title"].apply(clean_title)
-        df.to_excel("parsed.xlsx", index=False)
+        df.to_excel(f"{self.school}_parsed.xlsx", index=False)
         # df.to_csv("result.csv")
 
     def main(self):
         self.login()
-        self.browse_group()
-        self.scrape_posts()
+        if self.school == "all":
+            for school in self.school_group_id:
+                self.school = school
+                if school != "all":
+                    self.browse_group()
+                    self.scrape_posts()
         self.browser.quit()
 
 
