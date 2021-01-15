@@ -153,6 +153,9 @@ class SubletSorter:
                 if school != "all":
                     self.browse_group()
                     self.scrape_posts()
+        else:
+            self.browse_group()
+            self.scrape_posts()
         self.browser.quit()
 
 
