@@ -24,10 +24,7 @@ def create_browser():
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
-        browser = webdriver.Chrome(
-            executable_path=driver_path,
-            options=options,
-        )
+        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
     except Exception as e:
         browser = webdriver.Chrome(options=options)
     return browser
@@ -110,6 +107,7 @@ class SubletSorter:
     def scrape_posts(self):
         count = 0
         result = []
+        descriptions = set()
         link = None
         while count < self.num_posts:
             if link is None:
@@ -129,8 +127,11 @@ class SubletSorter:
             try:
                 parsed = parse_post(post)
                 if parsed:
-                    result.append(parsed)
-                    count += 1
+                    description = parsed["description"]
+                    if not description or description not in descriptions:
+                        result.append(parsed)
+                        descriptions.add(description)
+                        count += 1
             except Exception as e:
                 print(e)
             self.remove(post)
@@ -168,10 +169,7 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts",
-        type=int,
-        default=200,
-        help="how many posts to scrape",
+        "--num_posts", type=int, default=200, help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)
