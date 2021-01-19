@@ -83,6 +83,10 @@ class SubletSorter:
         }, "`school` must be one of 'yale' or 'brown', or 'all'"
         self.num_posts = args.num_posts
         self.browser = create_browser()
+        self.SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+        
+        # Sublet Sorter Template sheet id
+        self.template_sheet_id = "1as_XNiQIXq2AcECHurzxao138udJLo7h6g4wJmYn2Po"
 
     def login(self):
         self.browser.get("https://mbasic.facebook.com")
@@ -145,6 +149,9 @@ class SubletSorter:
         df["Title"] = df["Title"].apply(clean_title)
         df.to_excel(f"{self.school}_parsed.xlsx", index=False)
         # df.to_csv("result.csv")
+
+    def create_sheet(self):
+
 
     def main(self):
         self.login()
