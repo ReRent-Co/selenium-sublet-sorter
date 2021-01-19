@@ -24,7 +24,10 @@ def create_browser():
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
-        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
+        browser = webdriver.Chrome(
+            executable_path=driver_path,
+            options=options,
+        )
     except Exception as e:
         browser = webdriver.Chrome(options=options)
     return browser
@@ -83,8 +86,8 @@ class SubletSorter:
         }, "`school` must be one of 'yale' or 'brown', or 'all'"
         self.num_posts = args.num_posts
         self.browser = create_browser()
-        self.SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-        
+        self.SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+
         # Sublet Sorter Template sheet id
         self.template_sheet_id = "1as_XNiQIXq2AcECHurzxao138udJLo7h6g4wJmYn2Po"
 
@@ -151,7 +154,46 @@ class SubletSorter:
         # df.to_csv("result.csv")
 
     def create_sheet(self):
+        creds = None
+        # The file token.pickle stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first
+        # time.
+        if os.path.exists("token.pickle"):
+            with open("token.pickle", "rb") as token:
+                creds = pickle.load(token)
+        # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    "credentials.json", SCOPES
+                )
+                creds = flow.run_local_server(port=0)
+            # Save the credentials for the next run
+            with open("token.pickle", "wb") as token:
+                pickle.dump(creds, token)
 
+        service = build("sheets", "v4", credentials=creds)
+
+        # Call the Sheets API
+        sheet = service.spreadsheets()
+        result = (
+            sheet.values()
+            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
+            .execute()
+        )
+        values = result.get("values", [])
+
+        if not values:
+            print("No data found.")
+        else:
+            print("Name, Major:")
+            for row in values:
+                # Print columns A and E, which correspond to indices 0 and 4.
+                print("%s, %s" % (row[0], row[4]))
+
+        # Create new sheet
 
     def main(self):
         self.login()
@@ -176,7 +218,10 @@ if __name__ == "__main__":
         help="which school housing group to scrape",
     )
     parser.add_argument(
-        "--num_posts", type=int, default=200, help="how many posts to scrape",
+        "--num_posts",
+        type=int,
+        default=200,
+        help="how many posts to scrape",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)
