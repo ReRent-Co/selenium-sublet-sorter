@@ -6,6 +6,7 @@ import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
+from datetime import datetime
 
 from utils import clean_name_url, clean_post_url, clean_title, parse_date, parse_price
 
@@ -88,8 +89,9 @@ class SubletSorter:
         self.browser = create_browser()
         self.SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
-        # Sublet Sorter Template sheet id
+        # Sublet Sorter Template sheet and worksheet id
         self.template_sheet_id = "1as_XNiQIXq2AcECHurzxao138udJLo7h6g4wJmYn2Po"
+        self.worksheet_id = "245692157"
 
     def login(self):
         self.browser.get("https://mbasic.facebook.com")
@@ -176,24 +178,34 @@ class SubletSorter:
 
         service = build("sheets", "v4", credentials=creds)
 
-        # Call the Sheets API
-        sheet = service.spreadsheets()
-        result = (
-            sheet.values()
-            .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME)
+        # Create new spreadsheet with title and save id
+        datestamp = datetime.now().strftime("%m/%d/%y")
+        spreadsheet = {
+            "properties": {
+                "title": f"{self.school.capitalize()} Sublet Sorter {datestamp}"
+            }
+        }
+        spreadsheet = (
+            service.spreadsheets()
+            .create(body=spreadsheet, fields="spreadsheetId")
             .execute()
         )
-        values = result.get("values", [])
 
-        if not values:
-            print("No data found.")
-        else:
-            print("Name, Major:")
-            for row in values:
-                # Print columns A and E, which correspond to indices 0 and 4.
-                print("%s, %s" % (row[0], row[4]))
+        # Prepare for copy
+        source_spreadsheet_id = self.template_sheet_id
+        target_spreadsheet_id = spreadsheet.get("spreadsheetId")
+        worksheet_id = self.worksheet_id
 
-        # Create new sheet
+        # Call the Sheets API
+        sheet = service.spreadsheets()
+
+        sheet.sheets().copyTo(
+            spreadsheetId=source_spreadsheet_id,
+            sheetId=worksheet_id,
+            body={"destinationSpreadsheetId": target_spreadsheet_id},
+        )
+
+        # copy data from DataFrame
 
     def main(self):
         self.login()
