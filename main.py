@@ -3,12 +3,25 @@ import os
 from sys import platform
 
 import pandas as pd
+import numpy as np
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from datetime import datetime
+import pickle
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
-from utils import clean_name_url, clean_post_url, clean_title, parse_date, parse_price
+from utils import (
+    clean_name_url,
+    clean_post_url,
+    clean_title,
+    parse_date,
+    parse_price,
+    df_to_sheet,
+)
 
 
 def create_browser():
@@ -87,7 +100,7 @@ class SubletSorter:
         }, "`school` must be one of 'yale' or 'brown', or 'all'"
         self.num_posts = args.num_posts
         self.browser = create_browser()
-        self.SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        self.SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
         # Sublet Sorter Template sheet and worksheet id
         self.template_sheet_id = "1as_XNiQIXq2AcECHurzxao138udJLo7h6g4wJmYn2Po"
@@ -136,7 +149,8 @@ class SubletSorter:
             try:
                 parsed = parse_post(post)
                 if parsed:
-                    description = parsed["description"]
+                    description = parsed["Description"]
+
                     if not description or description not in descriptions:
                         result.append(parsed)
                         descriptions.add(description)
@@ -152,10 +166,11 @@ class SubletSorter:
         df["Profile URL"] = df["Profile URL"].apply(clean_name_url)
         df["Post URL"] = df["Post URL"].apply(clean_post_url)
         df["Title"] = df["Title"].apply(clean_title)
-        df.to_excel(f"{self.school}_parsed.xlsx", index=False)
+        # df.to_excel(f"{self.school}_parsed.xlsx", index=False)
         # df.to_csv("result.csv")
+        return df
 
-    def create_sheet(self):
+    def create_sheet(self, df):
         creds = None
         # The file token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -169,7 +184,7 @@ class SubletSorter:
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", SCOPES
+                    "credentials.json", self.SCOPES
                 )
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
@@ -191,21 +206,36 @@ class SubletSorter:
             .execute()
         )
 
-        # Prepare for copy
         source_spreadsheet_id = self.template_sheet_id
         target_spreadsheet_id = spreadsheet.get("spreadsheetId")
         worksheet_id = self.worksheet_id
 
-        # Call the Sheets API
+        # Copy Template into spreadsheet
         sheet = service.spreadsheets()
 
-        sheet.sheets().copyTo(
+        request = sheet.sheets().copyTo(
             spreadsheetId=source_spreadsheet_id,
             sheetId=worksheet_id,
             body={"destinationSpreadsheetId": target_spreadsheet_id},
         )
+        request.execute()
 
-        # copy data from DataFrame
+        body = {"requests": [{"deleteSheet": {"sheetId": 0}}]}
+        request = sheet.batchUpdate(spreadsheetId=target_spreadsheet_id, body=body)
+        response = request.execute()
+
+        # Prepare Data
+        values = df_to_sheet(df)[1:]
+        body = {"values": values}
+        range_to = str(4 + len(values))
+
+        # Copy data into sheet
+        service.spreadsheets().values().update(
+            spreadsheetId=target_spreadsheet_id,
+            range=f"A4:H{range_to}",
+            valueInputOption="USER_ENTERED",
+            body=body,
+        ).execute()
 
     def main(self):
         self.login()
@@ -214,10 +244,12 @@ class SubletSorter:
                 self.school = school
                 if school != "all":
                     self.browse_group()
-                    self.scrape_posts()
+                    df = self.scrape_posts()
+                    self.create_sheet(df)
         else:
             self.browse_group()
-            self.scrape_posts()
+            df = self.scrape_posts()
+            self.create_sheet(df)
         self.browser.quit()
 
 

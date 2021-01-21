@@ -1,5 +1,6 @@
 import re
 from datetime import datetime, timedelta
+import numpy as np
 
 
 def clean_name_url(url):
@@ -37,3 +38,10 @@ def parse_date(date):
     else:
         return date.split(" at")[0]
     return parsed_date.strftime("%B %-d")
+
+
+def df_to_sheet(df):
+    df_columns = [np.array(df.columns)]
+    df_values = df.values.tolist()
+    df_to_sheet = np.concatenate((df_columns, df_values)).tolist()
+    return df_to_sheet
