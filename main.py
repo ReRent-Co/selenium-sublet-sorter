@@ -237,6 +237,64 @@ class SubletSorter:
             body=body,
         ).execute()
 
+        return target_spreadsheet_id
+
+    def share_and_get_link(self, file_id):
+        SCOPES = ["https://www.googleapis.com/auth/drive"]
+
+        """Shows basic usage of the Drive v3 API.
+        Prints the names and ids of the first 10 files the user has access to.
+        """
+        creds = None
+        # The file token.pickle stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first
+        # time.
+        if os.path.exists("drive_token.pickle"):
+            with open("drive_token.pickle", "rb") as token:
+                creds = pickle.load(token)
+        # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    "drive_credentials.json", SCOPES
+                )
+                creds = flow.run_local_server(port=0)
+            # Save the credentials for the next run
+            with open("drive_token.pickle", "wb") as token:
+                pickle.dump(creds, token)
+
+        drive_service = build("drive", "v3", credentials=creds)
+
+        def callback(request_id, response, exception):
+            if exception:
+                # Handle error
+                # print(exception)
+                pass
+            else:
+                # print("Permission Id: %s" % response.get("id"))
+                pass
+
+        batch = drive_service.new_batch_http_request(callback=callback)
+        user_permission = {
+            "type": "anyone",
+            "role": "writer",
+        }
+        batch.add(
+            drive_service.permissions().create(
+                fileId=file_id,
+                body=user_permission,
+                fields="id",
+            )
+        )
+        r = batch.execute()
+
+        # Get Link
+        file = drive_service.files().get(fileId=file_id, fields="webViewLink").execute()
+        # print(file)
+        return file["webViewLink"]
+
     def main(self):
         self.login()
         if self.school == "all":
@@ -245,11 +303,13 @@ class SubletSorter:
                 if school != "all":
                     self.browse_group()
                     df = self.scrape_posts()
-                    self.create_sheet(df)
+                    file_id = self.create_sheet(df)
+                    print(f"{self.school}: {self.share_and_get_link(file_id)}")
         else:
             self.browse_group()
             df = self.scrape_posts()
-            self.create_sheet(df)
+            file_id = self.create_sheet(df)
+            print(f"{self.school}: {self.share_and_get_link(file_id)}")
         self.browser.quit()
 
 
