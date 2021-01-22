@@ -97,7 +97,7 @@ class SubletSorter:
             "yale",
             "brown",
             "all",
-        }, "`school` must be one of 'yale' or 'brown', or 'all'"
+        }, "`school` not in list!"
         self.num_posts = args.num_posts
         self.browser = create_browser()
         self.SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
