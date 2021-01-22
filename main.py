@@ -1,6 +1,7 @@
 import argparse
 import os
 from sys import platform
+import requests, json
 
 import pandas as pd
 import numpy as np
@@ -295,21 +296,39 @@ class SubletSorter:
         # print(file)
         return file["webViewLink"]
 
+    def create_bitly(self, sheet_url):
+        access_token = "afc8f422a47ebadd6ec8ff786316f6b3167bf5b4"
+
+        url = "https://api-ssl.bitly.com/v4/shorten"
+        data = {"long_url": sheet_url, "domain": "bit.ly"}
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+        }
+        response = requests.post(
+            url,
+            data=json.dumps(data),
+            headers=headers,
+        )
+        return response.json()["link"]
+
     def main(self):
         self.login()
-        if self.school == "all":
-            for school in self.school_group_id:
-                self.school = school
-                if school != "all":
-                    self.browse_group()
-                    df = self.scrape_posts()
-                    file_id = self.create_sheet(df)
-                    print(f"{self.school}: {self.share_and_get_link(file_id)}")
-        else:
-            self.browse_group()
-            df = self.scrape_posts()
-            file_id = self.create_sheet(df)
-            print(f"{self.school}: {self.share_and_get_link(file_id)}")
+
+        if self.school != "all":
+            self.school_group_id = {self.school: self.school_group_id[self.school]}
+            print(self.school_group_id)
+
+        for school in self.school_group_id:
+            self.school = school
+            if school != "all":
+                self.browse_group()
+                df = self.scrape_posts()
+                file_id = self.create_sheet(df)
+                sheet_url = self.share_and_get_link(file_id)
+                bitly_url = self.create_bitly(sheet_url)
+                print(f"{self.school}: {bitly_url}")
+
         self.browser.quit()
 
 
