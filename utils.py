@@ -1,8 +1,11 @@
+import json
 import os
 import pickle
+import smtplib
+import ssl
 from datetime import datetime
+from email.message import EmailMessage
 from sys import platform
-import json
 
 import numpy as np
 import requests
@@ -213,3 +216,23 @@ def create_sheet(df, school):
 
     return target_spreadsheet_id
 
+
+def send_email(text, cc=[]):
+    # email config
+    port = 465
+    email = "host.rerent@gmail.com"
+    password = os.environ["EMAIL_PASSWORD"]
+    smtp_server = "smtp.gmail.com"
+
+    # email content
+    message = EmailMessage()
+    message.set_content(text)
+    message["Subject"] = "Sublet Sorter"
+    message["From"] = email
+    message["To"] = ["abarclay321@gmail.com"]
+    message["CC"] = cc
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+        server.login(email, password)
+        server.send_message(message)
