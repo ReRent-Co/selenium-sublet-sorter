@@ -1,9 +1,9 @@
 name: cron
 on:
-  schedule:
-    # every five minutes
-    # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
-    - cron: "*/5 * * * *"
+  # schedule:
+  #   # every five minutes
+  #   # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
+  - cron: "* * * * *"
 jobs:
   cron:
     runs-on: ubuntu-latest
