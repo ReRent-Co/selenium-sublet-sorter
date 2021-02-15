@@ -19,7 +19,7 @@ from selenium.webdriver.common.keys import Keys
 
 def create_browser():
     options = webdriver.ChromeOptions()
-    options.headless = bool(1 - int(os.getenv("DEBUG", 1)))
+    options.headless = bool(1 - int(os.getenv("DEBUG", 0)))
     options.add_argument("--no-sandbox")
     options.add_argument("disable-gpu")
     options.add_argument("--disable-dev-shm-usage")
@@ -27,7 +27,7 @@ def create_browser():
     options.add_argument("window-size=1920,1080")
     try:
         driver_path = (
-            "/usr/local/share/chromedriver"
+            "chromedriver"
             if platform == "linux"
             else "/Users/jaketae/opt/chrome/chromedriver"
         )
@@ -229,7 +229,7 @@ def send_email(text, cc=[]):
     message.set_content(text)
     message["Subject"] = "Sublet Sorter"
     message["From"] = email
-    message["To"] = ["abarclay321@gmail.com"]
+    message["To"] = ["jaesungtae@gmail.com"]
     message["CC"] = cc
 
     context = ssl.create_default_context()
