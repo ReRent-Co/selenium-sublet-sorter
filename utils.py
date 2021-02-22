@@ -229,7 +229,7 @@ def send_email(text, cc=[]):
     message.set_content(text)
     message["Subject"] = "Sublet Sorter"
     message["From"] = email
-    message["To"] = ["jaesungtae@gmail.com"]
+    message["To"] = ["abarclay321@gmail.com", "jaesungtae@gmail.com"]
     message["CC"] = cc
 
     context = ssl.create_default_context()

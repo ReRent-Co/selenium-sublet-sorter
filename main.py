@@ -95,6 +95,9 @@ class SubletSorter:
         school_group_id = {
             "yale": "1483912085183985",
             "brown": "683411031786289",
+            "harvard": "735597296550141",
+            "bc": "1435056483467446",
+            "tufts": "1552232378374052",
         }
         text = ""
         self.login()
