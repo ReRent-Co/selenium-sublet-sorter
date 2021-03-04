@@ -31,6 +31,23 @@ pipenv install -r requirements.txt
 
 Download an appropriate [Chrome driver](https://chromedriver.chromium.org/downloads) according to the OS and Chrome version of your device. Unzip the driver in an appropriate directory and take note of the full path. 
 
+### Environmental Variables
+
+The app requires the following environmental variables.
+
+```
+FACEBOOK_PASSWORD
+FACEBOOK_USERNAME
+EMAIL_PASSWORD
+DEBUG
+```
+
+Facebook username and password are self-explanatory; these constitute the credentials of the account with which the program will access the Facebook housing groups. This necessarily means that the account must be registered members of those Facebook groups, the vast majority of which are private.
+
+`EMAIL_PASSWORD` is the password to host.rerent@gmail.com, the ReRent Gmail account. This environmental variable is used to send emails of the completed sublet sorter links. More explanation is available below.
+
+It is recommended that `DEBUG` be set to 1 on your local machine, and 0 on a production server, should this script be run on the cloud or a non-local device. If `DEBUG` is 0, Chrome will run in headless mode, meaning you will not see anything on your screen. If it is set to 1, you will be able to see the script scrape through the Facebook groups. 
+
 ## Implementation
 
 The sublet sorter script can be understood as a pipeline that spans the following processes. Note that this process happens multiple times, for each housing group.
@@ -63,6 +80,13 @@ Below is an example command to run the script.
 python main.py --num_posts=100 --driver_path=/Users/jaketae/opt/chrome/chromedriver
 ```
 
-## Contributing
+After a couple of minutes, the script will send out an email that looks like this:
 
-Feel free to create issues or pull requests. You can also directly reach out to me at jaesungtae@gmail.com. 
+```
+Yale: https://bit.ly/3b4VU5B
+Brown: https://bit.ly/3b0XdlY
+Bc: https://bit.ly/3bOA1X9
+Tufts: https://bit.ly/3bNFqxH
+```
+
+By default, the recipient is Alikiah, abarclay321@gmail.com. 
