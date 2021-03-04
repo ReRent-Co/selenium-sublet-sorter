@@ -27,7 +27,7 @@ from utils import (
 class SubletSorter:
     def __init__(self, args):
         self.num_posts = args.num_posts
-        self.browser = create_browser()
+        self.browser = create_browser(args.driver_path)
 
     def login(self):
         self.browser.get("https://mbasic.facebook.com")
@@ -95,7 +95,7 @@ class SubletSorter:
         school_group_id = {
             "yale": "1483912085183985",
             "brown": "683411031786289",
-            "harvard": "735597296550141",
+            # "harvard": "735597296550141",
             "bc": "1435056483467446",
             "tufts": "1552232378374052",
         }
@@ -116,6 +116,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--num_posts", type=int, default=200, help="how many posts to scrape",
+    )
+    parser.add_argument(
+        "--driver_path",
+        default="/Users/jaketae/opt/chrome/chromedriver",
+        type=str,
+        help="chrome driver directory",
     )
     args = parser.parse_args()
     sublet_sorter = SubletSorter(args)

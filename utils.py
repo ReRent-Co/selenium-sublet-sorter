@@ -17,7 +17,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
 
-def create_browser():
+def create_browser(driver_path):
     options = webdriver.ChromeOptions()
     options.headless = bool(1 - int(os.getenv("DEBUG", 0)))
     options.add_argument("--no-sandbox")
@@ -25,15 +25,7 @@ def create_browser():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--remote-debugging-port=9222")
     options.add_argument("window-size=1920,1080")
-    try:
-        driver_path = (
-            "chromedriver"
-            if platform == "linux"
-            else "/Users/jaketae/opt/chrome/chromedriver"
-        )
-        browser = webdriver.Chrome(executable_path=driver_path, options=options,)
-    except Exception as e:
-        browser = webdriver.Chrome(options=options)
+    browser = webdriver.Chrome(executable_path=driver_path, options=options)
     return browser
 
 
