@@ -5,7 +5,6 @@ import smtplib
 import ssl
 from datetime import datetime
 from email.message import EmailMessage
-from sys import platform
 
 import numpy as np
 import requests
