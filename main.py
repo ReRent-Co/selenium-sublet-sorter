@@ -93,18 +93,23 @@ class SubletSorter:
 
     def main(self):
         school_group_id = {
-            "yale": "1483912085183985",
-            "brown": "683411031786289",
-            # "harvard": "735597296550141",
-            "bc": "1435056483467446",
-            "tufts": "1552232378374052",
+            "yale": ["1483912085183985", "yalehousing"],
+            "brown": ["683411031786289"],
+            # "harvard": ["735597296550141"],
+            "bc": ["1435056483467446"],
+            "tufts": ["1552232378374052"],
         }
         text = ""
         self.login()
-        for school, school_id in school_group_id.items():
-            self.browse_group(school_id)
-            df = self.scrape_posts()
-            file_id = create_sheet(df, school)
+        for school, school_ids in school_group_id.items():
+            combined_df = None
+            for school_id in school_ids:
+                self.browse_group(school_id)
+                df = self.scrape_posts()
+                combined_df = (
+                    df if combined_df is None else pd.concat([combined_df, df])
+                )
+            file_id = create_sheet(combined_df, school)
             sheet_url = share_and_get_link(file_id)
             bitly_url = create_bitly(sheet_url)
             text += f"{school.capitalize()}: {bitly_url}\n"
