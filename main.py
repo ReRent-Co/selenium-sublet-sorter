@@ -1,7 +1,10 @@
 import argparse
 import os
+import zipfile
+from sys import platform
 
 import pandas as pd
+import requests
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -115,6 +118,24 @@ class SubletSorter:
             text += f"{school.capitalize()}: {bitly_url}\n"
         send_email(text)
         self.browser.quit()
+
+
+def download_driver():
+    file_name = "chromedriver.zip"
+    if os.path.isfile(file_name):
+        return
+    if platform == "darwin":
+        file = "chromedriver_mac64.zip"
+    elif platform == "linux":
+        file = "chromedriver_linux64.zip"
+    else:
+        file = "chromedriver_win32.zip"
+    url = f"https://chromedriver.storage.googleapis.com/87.0.4280.88/{file}"
+    with open(file_name, "wb") as f:
+        response = requests.get(url)
+        f.write(response.content)
+    with zipfile.ZipFile(file_name, "r") as z:
+        z.extractall()
 
 
 if __name__ == "__main__":
