@@ -21,9 +21,11 @@ from utils import (
     create_bitly,
     create_browser,
     create_sheet,
+    fetch_sheet,
     parse_post,
     send_email,
     share_and_get_link,
+    sheet2schools,
 )
 
 
@@ -95,13 +97,9 @@ class SubletSorter:
         return df
 
     def main(self):
-        school_group_id = {
-            "yale": ["1483912085183985", "yalehousing"],
-            "brown": ["683411031786289"],
-            # "harvard": ["735597296550141"],
-            "bc": ["1435056483467446"],
-            "tufts": ["1552232378374052"],
-        }
+        school_group_id = sheet2schools(
+            fetch_sheet("1ug5AYylGKym3kog-AfT7sQusZ8sFDs9Xc77c4rrK-gg", "A:D")
+        )
         text = ""
         self.login()
         for school, school_ids in school_group_id.items():

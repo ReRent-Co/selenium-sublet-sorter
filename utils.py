@@ -70,13 +70,59 @@ def parse_post(post):
 def df_to_sheet(df):
     df_columns = [np.array(df.columns)]
     df_values = df.values.tolist()
-    df_to_sheet = np.concatenate((df_columns, df_values)).tolist()
-    return df_to_sheet
+    sheet = np.concatenate((df_columns, df_values)).tolist()
+    return sheet
+
+
+def make_gsheets_service():
+    creds = None
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+    # The file token.pickle stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    token_path = os.path.join("credentials", "token.pickle")
+    if os.path.exists(token_path):
+        with open(token_path, "rb") as token:
+            creds = pickle.load(token)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                os.path.join("credentials", "credentials.json"), SCOPES
+            )
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open(token_path, "wb") as token:
+            pickle.dump(creds, token)
+    service = build("sheets", "v4", credentials=creds)
+    return service
+
+
+def fetch_sheet(sheet_id, range_):
+    # sheet_id: 1ug5AYylGKym3kog-AfT7sQusZ8sFDs9Xc77c4rrK-gg
+    # range_: 'A:D'
+    service = make_gsheets_service()
+    sheet = service.spreadsheets()
+    result = sheet.values().get(spreadsheetId=sheet_id, range=range_).execute()
+    values = result.get("values", [])
+    return values
+
+
+def sheet2schools(sheet_info):
+    # [
+    #     ["yale", "1483912085183985", "yalehousing"],
+    #     ["brown", "683411031786289"],
+    #     ["bc", "1435056483467446"],
+    #     ["tufts", "1552232378374052"],
+    # ]
+    result = {row[0]: row[1:] for row in sheet_info}
+    return result
 
 
 def share_and_get_link(file_id):
     SCOPES = ["https://www.googleapis.com/auth/drive"]
-
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
     """
@@ -100,7 +146,6 @@ def share_and_get_link(file_id):
         # Save the credentials for the next run
         with open(drive_token_path, "wb") as token:
             pickle.dump(creds, token)
-
     drive_service = build("drive", "v3", credentials=creds)
 
     def callback(request_id, response, exception):
@@ -144,29 +189,7 @@ def create_bitly(sheet_url):
 
 
 def create_sheet(df, school):
-    creds = None
-    SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    token_path = os.path.join("credentials", "token.pickle")
-    if os.path.exists(token_path):
-        with open(token_path, "rb") as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                os.path.join("credentials", "credentials.json"), SCOPES
-            )
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open(token_path, "wb") as token:
-            pickle.dump(creds, token)
-
-    service = build("sheets", "v4", credentials=creds)
+    service = make_gsheets_service()
 
     # Create new spreadsheet with title and save id
     datestamp = datetime.now().strftime("%m/%d/%y")
