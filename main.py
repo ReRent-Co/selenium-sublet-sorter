@@ -31,7 +31,6 @@ from utils import (
 
 class SubletSorter:
     def __init__(self, args):
-        self.num_posts = args.num_posts
         self.browser = create_browser(args.driver_path)
 
     def login(self):
