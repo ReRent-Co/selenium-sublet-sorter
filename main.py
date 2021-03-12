@@ -98,11 +98,12 @@ class SubletSorter:
 
     def main(self):
         school_group_id = sheet2schools(
-            fetch_sheet("1ug5AYylGKym3kog-AfT7sQusZ8sFDs9Xc77c4rrK-gg", "A:D")
+            fetch_sheet("1ug5AYylGKym3kog-AfT7sQusZ8sFDs9Xc77c4rrK-gg", "A2:E")
         )
         text = ""
         self.login()
-        for school, school_ids in school_group_id.items():
+        for school, (num_posts, school_ids) in school_group_id.items():
+            self.num_posts = num_posts
             combined_df = None
             for school_id in school_ids:
                 self.browse_group(school_id)
@@ -119,6 +120,9 @@ class SubletSorter:
 
 
 def download_driver():
+    """
+    TODO: write description
+    """
     file_name = "chromedriver.zip"
     if os.path.isfile(file_name):
         return
@@ -138,9 +142,6 @@ def download_driver():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--num_posts", type=int, default=200, help="how many posts to scrape",
-    )
     parser.add_argument(
         "--driver_path",
         default="chromedriver",

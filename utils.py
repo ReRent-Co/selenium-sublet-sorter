@@ -112,12 +112,12 @@ def fetch_sheet(sheet_id, range_):
 
 def sheet2schools(sheet_info):
     # [
-    #     ["yale", "1483912085183985", "yalehousing"],
-    #     ["brown", "683411031786289"],
-    #     ["bc", "1435056483467446"],
-    #     ["tufts", "1552232378374052"],
+    #     ["yale", "200", "1483912085183985", "yalehousing"],
+    #     ["brown", "200", "683411031786289"],
+    #     ["bc", "200", "1435056483467446"],
+    #     ["tufts", "200", "1552232378374052"],
     # ]
-    result = {row[0]: row[1:] for row in sheet_info}
+    result = {row[0]: (row[1], row[2:]) for row in sheet_info}
     return result
 
 
@@ -194,7 +194,10 @@ def create_sheet(df, school):
     # Create new spreadsheet with title and save id
     datestamp = datetime.now().strftime("%m/%d/%y")
     spreadsheet = {
-        "properties": {"title": f"{school.capitalize()} Sublet Sorter {datestamp}"}
+        "properties": {
+            "title": f"{school.capitalize()} Sublet Sorter {datestamp}",
+            # TODO: specify tab names?
+        }
     }
     spreadsheet = (
         service.spreadsheets()
