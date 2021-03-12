@@ -117,7 +117,7 @@ def sheet2schools(sheet_info):
     #     ["bc", "200", "1435056483467446"],
     #     ["tufts", "200", "1552232378374052"],
     # ]
-    result = {row[0]: (row[1], row[2:]) for row in sheet_info}
+    result = {row[0]: (int(row[1]), row[2:]) for row in sheet_info}
     return result
 
 
