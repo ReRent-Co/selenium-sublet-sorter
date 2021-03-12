@@ -1,6 +1,7 @@
 import argparse
 import os
 import zipfile
+from datetime import datetime
 from sys import platform
 
 import pandas as pd
@@ -112,7 +113,9 @@ class SubletSorter:
                 )
             file_id = create_sheet(combined_df, school)
             sheet_url = share_and_get_link(file_id)
-            bitly_url = create_bitly(sheet_url)
+            bitly_url = create_bitly(
+                sheet_url, f"{school.capitalize()} {str(datetime.today()).split()[0]}"
+            )
             text += f"{school.capitalize()}: {bitly_url}\n"
         send_email(text)
         self.browser.quit()

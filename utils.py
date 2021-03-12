@@ -175,11 +175,15 @@ def share_and_get_link(file_id):
     return file["webViewLink"]
 
 
-def create_bitly(sheet_url):
+def create_bitly(sheet_url, title):
     access_token = "afc8f422a47ebadd6ec8ff786316f6b3167bf5b4"
 
     url = "https://api-ssl.bitly.com/v4/shorten"
-    data = {"long_url": sheet_url, "domain": "bit.ly"}
+    data = {
+        "long_url": sheet_url,
+        "domain": "bit.ly",
+        "title": title,
+    }
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}",
