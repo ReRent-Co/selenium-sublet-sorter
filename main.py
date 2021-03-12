@@ -145,7 +145,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--driver_path",
-        default="/Users/jaketae/opt/chrome/chromedriver",
+        default="chromedriver",
         type=str,
         help="chrome driver directory",
     )
