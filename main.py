@@ -2,6 +2,7 @@ import argparse
 import os
 import zipfile
 from datetime import datetime
+from socket import *
 from sys import platform
 
 import pandas as pd
@@ -143,6 +144,8 @@ def download_driver():
 
 
 if __name__ == "__main__":
+    s = socket(AF_INET, SOCK_STREAM)
+    s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--driver_path",
