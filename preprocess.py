@@ -36,5 +36,5 @@ def parse_date(date):
         parsed_date = today - timedelta(days=1)
     else:
         return date.split(" at")[0]
-    return parsed_date.strftime("%B %-d")
+    return parsed_date.strftime("%B %d")
 
