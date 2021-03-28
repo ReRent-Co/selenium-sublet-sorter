@@ -178,7 +178,7 @@ def share_and_get_link(file_id):
 
 
 def create_bitly(sheet_url, title):
-    access_token = "afc8f422a47ebadd6ec8ff786316f6b3167bf5b4"
+    access_token = "0eb5a82c59a08859564d32503e50cc08147a9fbb"
 
     url = "https://api-ssl.bitly.com/v4/shorten"
     data = {
