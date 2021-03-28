@@ -15,11 +15,12 @@ from googleapiclient.discovery import build
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
+from credentials import DEBUG
 
 
 def create_browser(driver_path):
     options = webdriver.ChromeOptions()
-    options.headless = bool(1 - int(os.getenv("DEBUG", 0)))
+    options.headless = bool(1 - int(DEBUG))
     options.add_argument("--no-sandbox")
     options.add_argument("disable-gpu")
     options.add_argument("--disable-dev-shm-usage")

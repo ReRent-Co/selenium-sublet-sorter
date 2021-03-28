@@ -12,6 +12,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from selenium.common.exceptions import NoSuchElementException
 
+from credentials import FACEBOOK_PASSWORD, FACEBOOK_USERNAME
 from preprocess import (
     clean_name_url,
     clean_post_url,
@@ -37,11 +38,9 @@ class SubletSorter:
 
     def login(self):
         self.browser.get("https://mbasic.facebook.com")
-        self.browser.find_element_by_id("m_login_email").send_keys(
-            os.getenv("FACEBOOK_USERNAME")
-        )
+        self.browser.find_element_by_id("m_login_email").send_keys(FACEBOOK_USERNAME)
         self.browser.find_element_by_xpath("//input[@type='password']").send_keys(
-            os.getenv("FACEBOOK_PASSWORD")
+            FACEBOOK_PASSWORD
         )
         self.browser.find_element_by_xpath("//input[@name='login']").click()
 
