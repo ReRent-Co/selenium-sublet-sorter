@@ -15,7 +15,8 @@ from googleapiclient.discovery import build
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
-from credentials import DEBUG
+
+from credentials import DEBUG, EMAIL_PASSWORD
 
 
 def create_browser(driver_path):
@@ -248,7 +249,7 @@ def send_email(text, cc=[]):
     # email config
     port = 465
     email = "host.rerent@gmail.com"
-    password = os.environ["EMAIL_PASSWORD"]
+    password = EMAIL_PASSWORD
     smtp_server = "smtp.gmail.com"
 
     # email content
